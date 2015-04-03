@@ -78,7 +78,8 @@ public class AdvertiserActivity extends Activity
          * allow test devices or other sideloads to report whether or not
          * the feature exists.
          */
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+        if (!getPackageManager()
+                .hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(this, "No LE Support.", Toast.LENGTH_SHORT)
                     .show();
             finish();
