@@ -4,13 +4,11 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.AdvertiseCallback;
-import android.bluetooth.le.AdvertiseData;
 import android.bluetooth.le.AdvertiseSettings;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.View;
 import android.widget.SeekBar;
@@ -21,10 +19,6 @@ import android.widget.Toast;
 public class AdvertiserActivity extends Activity implements SeekBar.OnSeekBarChangeListener {
     private static final String TAG = AdvertiserActivity.class.getSimpleName();
     private static final int DEFAULT_VALUE = 20;
-
-    /* Full Bluetooth UUID that defines the Health Thermometer Service */
-    public static final ParcelUuid THERM_SERVICE =
-            ParcelUuid.fromString("00001809-0000-1000-8000-00805f9b34fb");
 
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeAdvertiser mBluetoothLeAdvertiser;
@@ -51,6 +45,11 @@ public class AdvertiserActivity extends Activity implements SeekBar.OnSeekBarCha
          */
         BluetoothManager manager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
         mBluetoothAdapter = manager.getAdapter();
+        if (mBluetoothAdapter == null) {
+            Toast.makeText(this, "No Bluetooth Support.", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
         mBluetoothLeAdvertiser = mBluetoothAdapter.getBluetoothLeAdvertiser();
     }
 
@@ -61,7 +60,7 @@ public class AdvertiserActivity extends Activity implements SeekBar.OnSeekBarCha
          * We need to enforce that Bluetooth is first enabled, and take the
          * user to settings to enable it if they have not done so.
          */
-        if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
+        if (!mBluetoothAdapter.isEnabled()) {
             //Bluetooth is disabled
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivity(enableBtIntent);
@@ -90,47 +89,18 @@ public class AdvertiserActivity extends Activity implements SeekBar.OnSeekBarCha
             return;
         }
 
-        startAdvertising();
+        DeviceUtil.startAdvertising(mBluetoothLeAdvertiser,
+                mAdvertiseCallback,
+                buildTemperaturePacket());
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        stopAdvertising();
+        DeviceUtil.stopAdvertising(mBluetoothLeAdvertiser, mAdvertiseCallback);
     }
 
-    private void startAdvertising() {
-        if (mBluetoothLeAdvertiser == null) return;
-
-        AdvertiseSettings settings = new AdvertiseSettings.Builder()
-                .setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
-                .setConnectable(false)
-                .setTimeout(0)
-                .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM)
-                .build();
-
-        AdvertiseData data = new AdvertiseData.Builder()
-                .setIncludeDeviceName(true)
-                .setIncludeTxPowerLevel(true)
-                .addServiceUuid(THERM_SERVICE)
-                .addServiceData(THERM_SERVICE, buildTempPacket())
-                .build();
-
-        mBluetoothLeAdvertiser.startAdvertising(settings, data, mAdvertiseCallback);
-    }
-
-    private void stopAdvertising() {
-        if (mBluetoothLeAdvertiser == null) return;
-
-        mBluetoothLeAdvertiser.stopAdvertising(mAdvertiseCallback);
-    }
-
-    private void restartAdvertising() {
-        stopAdvertising();
-        startAdvertising();
-    }
-
-    private byte[] buildTempPacket() {
+    private byte[] buildTemperaturePacket() {
         int value;
         try {
             value = Integer.parseInt(mCurrentValue.getText().toString());
@@ -156,7 +126,9 @@ public class AdvertiserActivity extends Activity implements SeekBar.OnSeekBarCha
     /** Click handler to update advertisement data */
 
     public void onUpdateClick(View v) {
-        restartAdvertising();
+        DeviceUtil.restartAdvertising(mBluetoothLeAdvertiser,
+                mAdvertiseCallback,
+                buildTemperaturePacket());
     }
 
     /** Callbacks to update UI when slider changes */
@@ -167,12 +139,8 @@ public class AdvertiserActivity extends Activity implements SeekBar.OnSeekBarCha
     }
 
     @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
-
-    }
+    public void onStartTrackingTouch(SeekBar seekBar) { }
 
     @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-
-    }
+    public void onStopTrackingTouch(SeekBar seekBar) { }
 }
