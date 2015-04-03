@@ -1,0 +1,3 @@
+= Bluetooth LE Advertiser
+
+This project was created to support various http://thenewcircle.com/training/android/[NewCircle Android Training] courses.
