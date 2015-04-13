@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">BluetoothLeAdvertiser</string>
+    <string name="text_prompt">Select a Temperature Value to Advertise:</string>
+    <string name="text_button">Update Advertisement</string>
+    <string name="text_address">Remote Device Address:</string>
+    <string name="text_record">Raw Scan Record:</string>
+    <string name="text_name">Device Name:</string>
+    <string name="text_manufacturer">Manufacturer Data:</string>
+    <string name="text_transmit">Transmit Power:</string>
+    <string name="label_scan">Scanner</string>
+    <string name="label_broadcast">Broadcaster</string>
 </resources>

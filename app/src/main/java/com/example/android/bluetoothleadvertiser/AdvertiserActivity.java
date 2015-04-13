@@ -99,24 +99,14 @@ public class AdvertiserActivity extends Activity
 
         DeviceUtil.startAdvertising(mBluetoothLeAdvertiser,
                 mAdvertiseCallback,
-                buildTemperaturePacket());
+                mSlider.getProgress());
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        DeviceUtil.stopAdvertising(mBluetoothLeAdvertiser, mAdvertiseCallback);
-    }
-
-    private byte[] buildTemperaturePacket() {
-        int value;
-        try {
-            value = Integer.parseInt(mCurrentValue.getText().toString());
-        } catch (NumberFormatException e) {
-            value = 0;
-        }
-
-        return new byte[] {(byte)value, 0x00};
+        DeviceUtil.stopAdvertising(mBluetoothLeAdvertiser,
+                mAdvertiseCallback);
     }
 
     private AdvertiseCallback mAdvertiseCallback = new AdvertiseCallback() {
@@ -136,7 +126,7 @@ public class AdvertiserActivity extends Activity
     public void onUpdateClick(View v) {
         DeviceUtil.restartAdvertising(mBluetoothLeAdvertiser,
                 mAdvertiseCallback,
-                buildTemperaturePacket());
+                mSlider.getProgress());
     }
 
     /** Callbacks to update UI when slider changes */
@@ -145,7 +135,8 @@ public class AdvertiserActivity extends Activity
     public void onProgressChanged(SeekBar seekBar,
                                   int progress,
                                   boolean fromUser) {
-        mCurrentValue.setText(String.valueOf(progress));
+        //Display selected temperature value
+        mCurrentValue.setText(String.valueOf(progress) + "\u00B0F");
     }
 
     @Override
